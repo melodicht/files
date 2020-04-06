@@ -283,21 +283,23 @@ if arguments.inout == 'i':
     os.path.dirname(os.path.realpath(__file__))
     subprocess.call(batdata, shell=True)
     time.sleep(2)
-    ASCIIdata=open('asciidata','rb')
-    ASCIIthing=bytes(ASCIIdata.read()[injtype])
-    MDLfile=open(arguments.ifile,'rb')
-    BTIfile=open('converted.bti','rb')
-    BTIdata=bytes(BTIfile.read())
-    MDLdata=MDLfile.read()
-    MDLfile.close()
-    MDLfile=open('new.mdl','wb')
-    offset=texture_offsets[arguments.texnum]
-    fileendoffset=texture_offsets[arguments.texnum+1]+len(BTIfile.read())+1
-    MDLfile.write(bytes(MDLdata[:offset]))
-    MDLfile.write(bytes(ASCIIthing))
-    MDLfile.write(BTIdata[len(BTIdata)-1:])
-    endoffset=len(MDLdata[:offset-1])+len(BTIfile.read())
-    MDLfile.write(bytes(MDLdata[len(MDLdata)-endoffset:]))
+    with open('asciidata','rb') as ASCIIfile:
+        ASCIIdata = bytes(ASCIIfile.read()[injtype])
+    
+    with open(arguments.ifile,'rb') as MDLfile:
+        MDLdata = MDLfile.read()
+
+    with open('converted.bti','rb') as BTIfile:
+        BTIdata = bytes(BTIfile.read())
+
+    with open('new.mdl','wb') as MDLfile:
+        offset=texture_offsets[arguments.texnum]
+        fileendoffset=texture_offsets[arguments.texnum+1]+len(BTIfile.read())+1
+        MDLfile.write(bytes(MDLdata[:offset]))
+        MDLfile.write(ASCIIdata)  # Separate issue
+        MDLfile.write(BTIdata[1:])  # Everything but the first element
+        endoffset=len(MDLdata[:offset-1])+len(BTIfile.read())
+        MDLfile.write(bytes(MDLdata[len(MDLdata)-endoffset:]))
 
 if arguments.inout == 'o':
     # Export textures
